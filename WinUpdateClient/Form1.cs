@@ -13,6 +13,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Net;
 using System.IO.Compression;
 using System.IO;
+using IWshRuntimeLibrary;
 
 namespace WinUpdateClient
 {
@@ -25,16 +26,30 @@ namespace WinUpdateClient
         static void ExtractDownloadedZIP()
         {
             string zipPath = @"C:\AdrianDevProjects\Newest.zip";
-            string extractPath = @"C:\AdrianDevProjects\UpdatedClient";
+            string extractPath = @"C:\AdrianDevProjects\AdrianDevHub";
 
-            if (Directory.Exists(@"C:\AdrianDevProjects\UpdatedClient"))
+            if (Directory.Exists(@"C:\AdrianDevProjects\AdrianDevHub"))
             {
-                Directory.Delete(@"C:\AdrianDevprojects\UpdatedClient", true);
+                Directory.Delete(@"C:\AdrianDevprojects\AdrianDevHub", true);
             }
             System.IO.Compression.ZipFile.ExtractToDirectory(zipPath, extractPath);
         }
 
-        private void download_window_Load(object sender, EventArgs e)
+
+    private void CreateShortcut()
+    {
+        object shDesktop = (object)"Desktop";
+        WshShell shell = new WshShell();
+        string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + @"\AdrianDevHub.lnk";
+        IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
+        shortcut.Description = "AdrianDevHub starten";
+        shortcut.Hotkey = "Ctrl+Shift+A";
+        shortcut.TargetPath = @"C:\AdrianDevProjects\AdrianDevHub\AdrianDevHub.exe";
+        shortcut.Save();
+    }
+
+
+    private void download_window_Load(object sender, EventArgs e)
         {
             startDownload();
         }
@@ -44,7 +59,7 @@ namespace WinUpdateClient
                 WebClient client = new WebClient();
                 client.DownloadProgressChanged += new DownloadProgressChangedEventHandler(client_DownloadProgressChanged);
                 client.DownloadFileCompleted += new AsyncCompletedEventHandler(client_DownloadFileCompleted);
-                client.DownloadFileAsync(new Uri("https://adriandevprojects.com/TurniereUndEventsClient-master.zip"), @"C:\AdrianDevProjects\Newest.zip");
+                client.DownloadFileAsync(new Uri("https://adriandevprojects.com/DevHub/newest.zip"), @"C:\AdrianDevProjects\Newest.zip");
             });
             thread.Start();
         }
@@ -64,7 +79,8 @@ namespace WinUpdateClient
                 download_label.Text = "Completed";
             });
             ExtractDownloadedZIP();
-            File.Delete(@"C:\AdrianDevProjects\Newest.zip");
+            System.IO.File.Delete(@"C:\AdrianDevProjects\Newest.zip");
+            CreateShortcut();
         }
     }
 }
